@@ -1,39 +1,33 @@
 import streamlit as st
-from utils.preprocessor import clean_text
-from utils.predictor import load_model, predict_bias
-from utils.data_fetcher import fetch_latest_news
+from utils.predictor import predict_headline, model, vectorizer
 
-st.set_page_config(page_title="Fake News Detector", page_icon="📰", layout="centered")
+st.set_page_config(page_title="Fake/News Bias Detector 🌍", page_icon="📰", layout="centered")
+
 st.title("🌍 Fake/News Bias Detector")
+st.write("Enter a headline below to check if it is biased or neutral:")
 
-# Load model
-try:
-    model, vectorizer = load_model()
-except FileNotFoundError:
-    model, vectorizer = None, None
-
-st.subheader("Enter a headline for analysis:")
-headline = st.text_input("Paste headline here...")
-if st.button("Analyze"):
-    if not headline.strip():
-        st.warning("Please enter a headline!")
-    else:
-        text = clean_text(headline)
-        if model and vectorizer:
-            label, score = predict_bias(text, model, vectorizer)
-            pct = score*100
-            st.success(f"Prediction: {label} — Confidence: {pct:.1f}%")
-        else:
-            st.error("Model missing! Run notebooks/model_training.py first.")
-
-st.subheader("Sample global & Indian headlines")
-try:
-    items = fetch_latest_news(limit=6)
-except Exception:
-    items = []
-
-if items:
-    for title, source in items:
-        st.markdown(f"- **{title}** ({source})")
+# Check if model is loaded
+if model is None or vectorizer is None:
+    st.error("⚠️ Model not found! Please run the training script first: `python -m notebooks.model_training`")
 else:
-    st.info("Could not fetch live headlines.")
+    # User input
+    input_text = st.text_area("Enter a headline for analysis:", placeholder="Paste headline here...")
+    
+    if st.button("Check Headline") and input_text.strip():
+        pred, conf = predict_headline(input_text)
+        if pred is not None:
+            st.success(f"Prediction: **{pred}** — Confidence: {conf:.1f}%")
+        else:
+            st.error("Prediction failed. Please try again.")
+
+# Sample global & Indian headlines
+st.markdown("---")
+st.subheader("Sample global & Indian headlines")
+st.markdown("""
+- Henry Zeffman: Efforts to shore up Starmer's leadership may have backfired (BBC)  
+- Trump pleads not guilty to 34 felony counts (CNN)  
+- State-sanctioned fuel smuggling cost Libya $20bn over three years – report (The Guardian)  
+- Xi’s Military Purges Show Unease About China’s Nuclear Forces (NYTimes)  
+- 12 Days Before Blast, Suspects Got i20's Pollution Checked, Then Parked It (NDTV)  
+- Alfonsine, Jersey King, Ice Of Fire and Sunlit Path excel (The Hindu)  
+""")
