@@ -1,18 +1,15 @@
 import streamlit as st
 from utils.predictor import predict_headline, model, vectorizer
 
-st.set_page_config(page_title="Fake/News Bias Detector 🌍", page_icon="📰", layout="centered")
+st.set_page_config(page_title="Real-Time News Bias Detector 🌐", page_icon="📰", layout="centered")
 
-st.title("🌍 Fake/News Bias Detector")
-st.write("Enter a headline below to check if it is biased or neutral:")
+st.title("🌐 Real-Time News Bias & Fake News Detector")
+st.subheader("Analyze global and Indian news headlines for bias or misinformation")
 
-# Check if model is loaded
 if model is None or vectorizer is None:
     st.error("⚠️ Model not found! Please run the training script first: `python -m notebooks.model_training`")
 else:
-    # User input
     input_text = st.text_area("Enter a headline for analysis:", placeholder="Paste headline here...")
-    
     if st.button("Check Headline") and input_text.strip():
         pred, conf = predict_headline(input_text)
         if pred is not None:
@@ -20,7 +17,7 @@ else:
         else:
             st.error("Prediction failed. Please try again.")
 
-# Sample global & Indian headlines
+# Sample headlines
 st.markdown("---")
 st.subheader("Sample global & Indian headlines")
 st.markdown("""
